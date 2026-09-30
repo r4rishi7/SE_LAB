@@ -4,6 +4,7 @@ Target Shooting (Lab Starter)
 Run with:  python3 main.py
 
 Click on targets to hit them.
+Press R after the round ends to restart.
 """
 
 import pygame
@@ -21,12 +22,18 @@ def main():
 
     engine = GameEngine()
     running = True
+
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 engine.handle_click(event.pos)
+
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_r and not engine.round_active:
+                    engine.restart()
 
         engine.update()
         engine.draw(screen, font)
