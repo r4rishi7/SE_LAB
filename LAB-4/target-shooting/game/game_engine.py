@@ -7,6 +7,7 @@ movement, no score/combo, no timer yet. That's Tasks 2-4.
 """
 
 import random
+import pygame
 
 from game.target import Target
 from game.hit_detection import check_hit
@@ -18,14 +19,36 @@ TARGET_RADIUS = 28
 
 class GameEngine:
     def __init__(self):
+        self._spawn_count = 0
         self.targets = [self._random_target() for _ in range(NUM_TARGETS)]
+        self._last_update_time = pygame.time.get_ticks()
         self.hits = 0
         self.misses = 0
 
     def _random_target(self):
         x = random.randint(TARGET_RADIUS + 10, WIDTH - TARGET_RADIUS - 10)
         y = random.randint(TARGET_RADIUS + 10, HEIGHT - TARGET_RADIUS - 10)
-        return Target(x, y, radius=TARGET_RADIUS)
+        # Give targets different movement patterns and speeds.
+        pattern = self._spawn_count % 3
+        self._spawn_count += 1
+
+        if pattern == 0:
+            # Slow horizontal movement.
+            vx, vy = 100.0, 0.0
+        elif pattern == 1:
+            # Faster vertical movement.
+            vx, vy = 0.0, 160.0
+        else:
+            # Faster diagonal movement.
+            vx, vy = 130.0, 130.0
+
+        # Randomize initial direction so targets do not all move the same way.
+        if vx != 0.0 and random.choice((False, True)):
+            vx *= -1
+        if vy != 0.0 and random.choice((False, True)):
+            vy *= -1
+
+        return Target(x, y, radius=TARGET_RADIUS, vx=vx, vy=vy)
 
     def handle_click(self, pos):
         target = check_hit(self.targets, pos)
@@ -37,7 +60,12 @@ class GameEngine:
             self.misses += 1
 
     def update(self):
-        pass
+        now = pygame.time.get_ticks()
+        dt = (now - self._last_update_time) / 1000.0
+        self._last_update_time = now
+
+        for target in self.targets:
+            target.update(dt, WIDTH, HEIGHT)
 
     def draw(self, surface, font):
         from game import renderer
