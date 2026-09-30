@@ -15,6 +15,7 @@ from game.renderer import WIDTH, HEIGHT
 
 NUM_TARGETS = 3
 TARGET_RADIUS = 28
+POINTS_PER_HIT = 10
 
 
 class GameEngine:
@@ -24,10 +25,13 @@ class GameEngine:
         self._last_update_time = pygame.time.get_ticks()
         self.hits = 0
         self.misses = 0
+        self.score = 0
+        self.combo_multiplier = 1
 
     def _random_target(self):
         x = random.randint(TARGET_RADIUS + 10, WIDTH - TARGET_RADIUS - 10)
         y = random.randint(TARGET_RADIUS + 10, HEIGHT - TARGET_RADIUS - 10)
+
         # Give targets different movement patterns and speeds.
         pattern = self._spawn_count % 3
         self._spawn_count += 1
@@ -45,19 +49,38 @@ class GameEngine:
         # Randomize initial direction so targets do not all move the same way.
         if vx != 0.0 and random.choice((False, True)):
             vx *= -1
+
         if vy != 0.0 and random.choice((False, True)):
             vy *= -1
 
-        return Target(x, y, radius=TARGET_RADIUS, vx=vx, vy=vy)
+        return Target(
+            x,
+            y,
+            radius=TARGET_RADIUS,
+            vx=vx,
+            vy=vy,
+        )
 
     def handle_click(self, pos):
         target = check_hit(self.targets, pos)
+
         if target is not None:
             self.hits += 1
+
+            # Award points using the current combo multiplier.
+            self.score += POINTS_PER_HIT * self.combo_multiplier
+
+            # Increase the multiplier for the next consecutive hit.
+            self.combo_multiplier += 1
+
             self.targets.remove(target)
             self.targets.append(self._random_target())
+
         else:
             self.misses += 1
+
+            # A miss breaks the combo.
+            self.combo_multiplier = 1
 
     def update(self):
         now = pygame.time.get_ticks()
@@ -69,5 +92,19 @@ class GameEngine:
 
     def draw(self, surface, font):
         from game import renderer
+
         renderer.draw_scene(surface, self.targets)
-        renderer.draw_text(surface, font, f"Hits: {self.hits}  Misses: {self.misses}", (10, 10))
+
+        renderer.draw_text(
+            surface,
+            font,
+            f"Score: {self.score}  Combo Multiplier: x{self.combo_multiplier}",
+            (10, 10),
+        )
+
+        renderer.draw_text(
+            surface,
+            font,
+            f"Hits: {self.hits}  Misses: {self.misses}",
+            (10, 36),
+        )
