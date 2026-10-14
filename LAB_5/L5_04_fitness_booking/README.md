@@ -1,51 +1,70 @@
 # Lab 5: Static Code Analysis — Fitness Club Class Booking Ledger
 
-**Your file:** `gym_system.py`
+## Overview
+This lab uses `gym_system.py`, a small fitness-class booking ledger for classes such as Yoga, HIIT, and Spin. It books members up to class capacity, cancels bookings, displays rosters, and exports the roster data to `gym_schedule.json`.
 
-Follow the lab handout for the full instructions.
+The goal is to inspect the program, use static-analysis tools to identify code-quality and security concerns, document the issues, apply fixes, and compare the reports before and after the changes.
 
-## About the program
+## Tools
+- **Pylint** — code quality, naming, conventions, and potential defects
+- **Flake8** — style and lint checks
+- **Bandit** — checks for common Python security issues
 
-A booking ledger for gym classes such as Yoga, HIIT and Spin. It books members into classes up to a capacity limit, handles cancellations and exports the rosters to `gym_schedule.json`.
+Install the tools in your Python environment:
 
-The code works, but only just. It has quality, style and security problems of the kind Pylint, Flake8 and Bandit are built to find.
+```bash
+python -m pip install pylint flake8 bandit
+```
 
-## What to do
+## Run the program
+From this directory, run:
 
-1. **Run it first** and read the output carefully:
-   ```bash
-   python gym_system.py
-   ```
-   It asks one question. Press Enter to use the default, then try a few inputs of your own. Not every problem in this file is something a tool will flag, so pay attention to output that looks wrong.
+```bash
+python gym_system.py
+```
 
-2. **Install the tools:**
-   ```bash
-   pip install pylint bandit flake8
-   ```
+The program asks for the number of walk-in guests for HIIT. Press Enter to use the default value (`1`), or enter a non-negative integer.
 
-3. **Run the analysis** and save the reports:
-   ```bash
-   pylint gym_system.py > pylint_report.txt
-   bandit -r gym_system.py > bandit_report.txt
-   flake8 gym_system.py > flake8_report.txt
-   ```
+## Run static analysis
+Create the baseline reports before making changes, then run the same commands again after the fixes. The repository stores reports in `BEFORE/` and `AFTER/` so that the results can be compared.
 
-4. **Document the issues** in `issues.md` using this table (at least 4 rows, high and medium severity first):
+```bash
+pylint gym_system.py > BEFORE/pylint_report_before.txt
+bandit -r gym_system.py > BEFORE/bandit_report_before.txt
+flake8 gym_system.py > BEFORE/flake8_report_before.txt
+```
 
-   | Issue | Type | Line(s) | Description | Fix Approach |
-   |-------|------|---------|-------------|--------------|
-   | ... | ... | ... | ... | ... |
+After fixing the code:
 
-5. **Fix the code.** Fix at least 4 of the issues you documented, then rerun all three tools to confirm they are gone. Repeat until you are satisfied. The program should still do its job when you are done.
+```bash
+pylint gym_system.py > AFTER/pylint_report_after.txt
+bandit -r gym_system.py > AFTER/bandit_report_after.txt
+flake8 gym_system.py > AFTER/flake8_report_after.txt
+```
 
-6. **Reflect.** Answer the four reflection questions from the handout in `reflection.md`.
+Run these commands from the project directory. The `BEFORE/` and `AFTER/` folders must exist first.
+
+## Issues and fixes
+See [`issues.md`](issues.md) for the issue table, severity, affected lines, descriptions, and proposed fixes.
+
+The final implementation includes improvements such as:
+- avoiding a mutable default argument for the attendance log;
+- handling missing bookings without crashing;
+- rejecting negative class capacities;
+- writing JSON with an explicit UTF-8 encoding;
+- using a controlled file pattern when removing old JSON exports; and
+- adding docstrings and clearer function/variable names.
+
+## Results
+The baseline reports are in `BEFORE/`; the final reports are in `AFTER/`. Compare the reports to confirm which findings were resolved. The final version previously achieved a Pylint score of **10.00/10**, Bandit reported **no issues**, and Flake8 produced no output. Re-run the tools in your environment to verify these results for the current files and tool versions.
 
 ## Deliverables
+- `gym_system.py` — cleaned program
+- `issues.md` — documented issue table
+- `reflection.md` — answers to the four reflection questions in the lab handout
+- `BEFORE/` and `AFTER/` — static-analysis reports
 
-1. `gym_system.py`: your cleaned version, with at least 4 issues fixed.
-2. `issues.md`: the completed issue table.
-3. `reflection.md`: your answers to the reflection questions.
-
-**Target:** aim for a Pylint score above 9.5 on your final file. A perfect 10.00/10 is very good.
-
-Be ready to explain the bugs you found and how you fixed them. You may be called on to present.
+## Notes
+- `gym_schedule.json` is generated when the program runs and is excluded from version control.
+- The Python virtual environment is excluded from version control.
+- The program should retain its booking, cancellation, roster display, and JSON-export functionality after the fixes.
